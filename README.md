@@ -34,7 +34,7 @@ The app uses the Spotify Web API to fetch playlist data and retrieve song detail
 
 ### Configure API Credentials
 
-#### ✅ Using Notepad
+#### Using Notepad
 
 You can also create and edit the file directly using Notepad:
 
