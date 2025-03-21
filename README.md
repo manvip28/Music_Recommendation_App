@@ -20,6 +20,39 @@ The app utilizes the "Spotify 1.2M+ Songs" dataset, which contains audio feature
 2. Log in to your Kaggle account.
 3. Click on the "Download" button to obtain the dataset files.
 
+## Spotify API Integration
+
+The app uses the Spotify Web API to fetch playlist data and retrieve song details. To authenticate API requests, you'll need to set up your Spotify Developer account and generate the required credentials.
+
+### Steps to Get Spotify API Credentials:
+
+1. Go to the [Spotify Developer Dashboard](https://developer.spotify.com/dashboard/login).
+2. Log in or create an account.
+3. Click on **Create an App** and fill in the necessary details.
+4. After creating the app, you will be provided with a `Client ID` and `Client Secret`.
+5. Set up a redirect URI (e.g., `http://localhost:8888/callback`) for authentication.
+
+### Configure API Credentials
+
+#### ✅ Using Notepad
+
+You can also create and edit the file directly using Notepad:
+
+1. Run the following command in PowerShell or Command Prompt:
+
+```powershell
+notepad .streamlit\secrets.toml
+```
+
+2. When Notepad opens, paste your Spotify credentials like this:
+
+```toml
+SPOTIFY_CLIENT_ID = "your_client_id_here"
+SPOTIFY_CLIENT_SECRET = "your_client_secret_here"
+```
+
+3. Save and close the file.
+
 ## Installation
 
 To set up the AI Music Recommendation App on your local machine, follow these steps:
@@ -31,7 +64,7 @@ To set up the AI Music Recommendation App on your local machine, follow these st
    cd Music_Recommendation_App
    ```
 
-2. **Set up a virtual environment** (optional):
+2. **Set up a virtual environment** (optional but recommended):
 
    ```bash
    python -m venv env
@@ -74,5 +107,6 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 ## Acknowledgments
 
 - The [Spotify 1.2M+ Songs](https://www.kaggle.com/datasets/rodolfofigueroa/spotify-12m-songs/data) dataset by [Rodolfo Figueroa](https://www.kaggle.com/rodolfofigueroa).
+- The [Spotify Web API](https://developer.spotify.com/documentation/web-api/) for providing access to playlist data.
 - The [Streamlit](https://streamlit.io/) community for providing an intuitive framework for building interactive web applications.
 
