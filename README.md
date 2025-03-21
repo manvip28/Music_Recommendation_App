@@ -64,7 +64,7 @@ To set up the AI Music Recommendation App on your local machine, follow these st
    cd Music_Recommendation_App
    ```
 
-2. **Set up a virtual environment** (optional but recommended):
+2. **Set up a virtual environment** (optional):
 
    ```bash
    python -m venv env
