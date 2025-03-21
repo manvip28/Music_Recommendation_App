@@ -3,6 +3,5 @@ pandas
 numpy
 scikit-learn
 annoy
-beautifulsoup4
 requests
-lxml
+spotipy
