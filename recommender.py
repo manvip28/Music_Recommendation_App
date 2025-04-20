@@ -2,40 +2,58 @@ from model import df, X_scaled, annoy_index
 from collections import defaultdict
 import pandas as pd
 
-def recommend_song_annoy(song_title, top_n=5):
-    # Extract just the song title if in "Song Name - Artist" format
-    if isinstance(song_title, dict):
-        song_title = song_title.get('name', '')
 
-
-    if " - " in song_title:
-        song_title = song_title.split(" - ")[0].strip()
+def recommend_song_annoy(song_data, top_n=5):
+    # Extract song title properly
+    if isinstance(song_data, dict):
+        song_title = song_data.get('title', song_data.get('name', ''))
+    else:
+        song_title = str(song_data)
     
-    # Ensure the 'name' column has no NaN values
+    # Debug output to see what's being searched
+    print(f"Searching for song: '{song_title}'")
+    
+    # Clean the title for better matching
+    clean_title = song_title.lower().strip()
+    
+    # Check if song exists in database
     valid_df = df.dropna(subset=['name'])
     
-    # Try to find a match in the dataset
-    indices = valid_df.index[valid_df['name'].str.lower() == song_title.lower()].tolist()
+    # Try exact match first (case insensitive)
+    indices = valid_df.index[valid_df['name'].str.lower().str.strip() == clean_title].tolist()
+    
     if not indices:
-        # If no exact match, try partial match
-        try:
-            indices = valid_df.index[valid_df['name'].str.lower().str.contains(song_title.lower(), regex=False)].tolist()
-        except Exception:
-            indices = []
+        # Log this for debugging
+        print(f"No exact match found for '{clean_title}'")
         
-        if not indices:
+        # Try partial match with some guards
+        try:
+            partial_matches = valid_df[valid_df['name'].str.lower().str.contains(clean_title, regex=False, na=False)]
+            if not partial_matches.empty:
+                print(f"Found {len(partial_matches)} partial matches")
+                indices = [partial_matches.index[0]]
+            else:
+                print(f"No partial matches found for '{clean_title}'")
+                return []
+        except Exception as e:
+            print(f"Error in partial matching: {e}")
             return []
     
-    idx = indices[0]
-    try:
-        nearest_indices = annoy_index.get_nns_by_item(idx, top_n + 1)
-        nearest_indices = [i for i in nearest_indices if i != idx][:top_n]
-        
-        # Return song title, artist(s), and duration
-        return df.iloc[nearest_indices][['name', 'artists', 'duration_ms']].to_dict(orient='records')
-    except Exception as e:
-        print(f"Error finding recommendations: {e}")
-        return []
+    if indices:
+        idx = indices[0]
+        try:
+            # Get recommendations
+            nearest_indices = annoy_index.get_nns_by_item(idx, top_n + 1)
+            # Remove the original song
+            nearest_indices = [i for i in nearest_indices if i != idx][:top_n]
+            
+            # Return recommended songs
+            return df.iloc[nearest_indices][['name', 'artists', 'duration_ms']].to_dict(orient='records')
+        except Exception as e:
+            print(f"Error finding recommendations: {e}")
+            return []
+    
+    return []
 
 def common_songs_priority(*lists):
     if not lists or all(len(lst) == 0 for lst in lists):
@@ -71,12 +89,19 @@ def recommend_playlist_songs(song_list):
     
     # Get recommendations for each song
     all_recommendations = []
-    for song in song_list:  
+    matched_count = 0
+    
+    for i, song in enumerate(song_list):
+        print(f"Song {i+1}/{len(song_list)}: {song.get('title', str(song))}")
         recommendations = recommend_song_annoy(song, top_n=20)
+        
         if recommendations:
+            matched_count += 1
             all_recommendations.append(recommendations)
     
-    if not all_recommendations:
+    print(f"Successfully matched {matched_count}/{len(song_list)} songs")
+    
+    if matched_count == 0:
         return ["No matching songs found in the database."]
     
     # Get common recommendations or prioritized list
@@ -85,4 +110,5 @@ def recommend_playlist_songs(song_list):
     if not final_recommendations:
         return ["No recommendations found."]
     
+    print(f"Final recommendation count: {len(final_recommendations)}")
     return final_recommendations
